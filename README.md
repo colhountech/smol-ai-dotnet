@@ -1,6 +1,6 @@
 # Introduction
 
-This is a dotnet fork of smole-au/developer, mostly created by asking chatGpt to translate the python script to dotnet and a few manual tweaks. 
+This is a dotnet port of [smole-ai/developer](https://github.com/smol-ai/developer), mostly created by asking chatGpt to translate the python script to dotnet and a few manual tweaks. 
 
 I've added some really basic ChatGPT classes, so it doesn't depend on any 3rd party nuget packages. 
 
