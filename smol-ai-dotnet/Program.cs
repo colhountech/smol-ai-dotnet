@@ -1,33 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using Modal;
-using Modal.Models;
-using static System.Net.Mime.MediaTypeNames;
-
-public class Program
+﻿public class Program
 {
-    private static Stub stub;
-    private static string generatedDir = "generated";
-    private static Image openai_image;
-    private static string openai_model = "gpt-4"; // or 'gpt-3.5-turbo'
-    private static int openai_model_max_tokens = 2000;
 
-    static Program()
-    {
-        stub = new Stub("smol-developer-v1");
-        openai_image = Image.DebianSlim().PipInstall("openai", "tiktoken");
-    }
+    const string generatedDir = "generated";
+
+    const string openai_model = "gpt-4"; // or 'gpt-3.5-turbo'
+    const int openai_model_max_tokens = 2000;
+
 
     public static async Task<string> GenerateResponse(string systemPrompt, string userPrompt, params string[] args)
     {
-        var encoding = TikToken.EncodingForModel(openai_model);
-        ReportTokens(systemPrompt, encoding);
-        ReportTokens(userPrompt, encoding);
+        //var encoding = TikToken.EncodingForModel(openai_model);
+        ReportTokens(systemPrompt);
+        ReportTokens(userPrompt);
 
         var messages = new List<Message>();
         messages.Add(new Message { Role = "system", Content = systemPrompt });
@@ -37,7 +21,7 @@ public class Program
         foreach (var value in args)
         {
             messages.Add(new Message { Role = role, Content = value });
-            ReportTokens(value, encoding);
+            ReportTokens(value);
             role = role == "assistant" ? "user" : "assistant";
         }
 
@@ -49,11 +33,14 @@ public class Program
             Temperature = 0
         };
 
-        var response = await stub.CallChatCompletionAsync(parameters, openai_image, new Secret());
+        // var response = await CallChatCompletionAsync(parameters);
 
-        var reply = response.Choices[0].Message.Content;
-        return reply;
+        //var reply = response.Choices[0].Message.Content;
+        //return reply;
+        return "reply";
     }
+
+
 
     public static async Task<(string, string)> GenerateFile(string filename, string filepathsString = null, string sharedDependencies = null, string prompt = null)
     {
@@ -91,7 +78,25 @@ public class Program
         return (filename, filecode);
     }
 
-    public static async Task Main(string prompt, string directory = generatedDir, string file = null)
+    static async Task Main(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            Console.WriteLine("Please provide the initial prompt as the first argument.");
+            return;
+        }
+
+        string prompt = args[0]; // Set your prompt here        
+        string directory = "generated"; // Set the directory path here
+        string file = null; // Set the file name here or leave it as null
+
+        // Your existing code here
+
+        await MainAsync(prompt, directory, file);
+    }
+
+
+    public static async Task MainAsync(string prompt, string directory = generatedDir, string file = null)
     {
         if (prompt.EndsWith(".md"))
         {
@@ -154,9 +159,9 @@ public class Program
                 Console.WriteLine(sharedDependencies);
                 WriteFile("shared_dependencies.md", sharedDependencies, directory);
 
-                foreach (var filename in listActual)
+                foreach (var f in listActual)
                 {
-                    var filecode = await GenerateFile(filename, filepathsString, sharedDependencies, prompt);
+                    var (filename, filecode) = await GenerateFile(f, filepathsString, sharedDependencies, prompt);
                     WriteFile(filename, filecode, directory);
                 }
             }
@@ -167,9 +172,9 @@ public class Program
         }
     }
 
-    private static void ReportTokens(string prompt, Encoding encoding)
+    private static void ReportTokens(string prompt)
     {
-        Console.WriteLine($"\u001b[37m{encoding.Encode(prompt).Count()} tokens\u001b[0m in prompt: \u001b[92m{prompt.Substring(0, 50)}\u001b[0m");
+        Console.WriteLine($"\u001b[37m{prompt.Count()} tokens\u001b[0m in prompt: \u001b[92m{prompt.Substring(0, 50)}\u001b[0m");
     }
 
     private static void WriteFile(string filename, string filecode, string directory)
