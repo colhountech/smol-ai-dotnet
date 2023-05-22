@@ -1,0 +1,1 @@
+a simple dotnet razor pages app that displays the Forecast Weather temperature from an azure function api

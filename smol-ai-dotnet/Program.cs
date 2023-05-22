@@ -41,6 +41,12 @@ public class Program
         var client = new OpenAiClient(APIKEY);
         Response response = await client.CallChatCompletionAsync(parameters);
 
+        if (response.error is Error error)
+        {
+            // response.Error "That model is currently overloaded with other requests. You can retry your request, or contact us through our help center at help.openai.com if the error persists. (Please include the request ID b24afc2c91294744679576584d2954b2 in your message.)"
+            return error.message;
+        }
+
         var reply = response.choices[0].message.content;
         return reply;
     }
@@ -142,8 +148,8 @@ public class Program
             
             When given their intent, create a complete, exhaustive list of filepaths that the user would write to make the program.
             
-            only list the filepaths you would write, and return them as a python list of strings. 
-            do not add any other explanation, only return a python list of strings",
+            only list the filepaths you would write, and return them without a leaing slash as a json list of strings. 
+            do not add any other explanation, only return a json list of strings ",
             // User Content
             prompt
         );
@@ -184,8 +190,8 @@ public class Program
                     the files we have decided to generate are: {filepathsString}
 
                     Now that we have a list of files, we need to understand what dependencies they share.
-                    Please name and briefly describe what is shared between the files we are generating, including exported variables, data schemas, id names of every DOM elements that javascript functions will use, message names, and function names.
-                    Exclusively focus on the names of the shared dependencies, and do not add any other explanation.",
+                    Please name and briefly describe what is shared between the files we are generating, including _Layouts.cshtml files.
+                    Exclusively focus on the names of the shared dependencies, and do not add any other explanation.",  
                     // User Content
                     prompt
                 );
